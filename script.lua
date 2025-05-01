@@ -1,100 +1,155 @@
--- Tạo GUI
-local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = playerGui
+local Window = Rayfield:CreateWindow({
+   Name = "Blox Fruits Script Menu",
+   LoadingTitle = "Blox Fruits Hub",
+   LoadingSubtitle = "Auto Farm & More",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "BloxFruitsUI",
+      FileName = "Config"
+   }
+})
 
--- Tạo Frame chứa các nút
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 250)
-frame.Position = UDim2.new(0.5, -150, 0.5, -125)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BackgroundTransparency = 0.7
-frame.BorderSizePixel = 0
-frame.Parent = screenGui
+-- Tab Auto Farm
+local AutoFarmTab = Window:CreateTab("Auto Farm", 4483362458)
 
--- Tạo một đường viền để làm đẹp
-local border = Instance.new("UIStroke")
-border.Parent = frame
-border.Thickness = 2
-border.Color = Color3.fromRGB(255, 255, 255)
-border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+-- Danh sách nhóm vũ khí
+local WeaponGroups = {
+    Melee = {"Combat", "Dragon Talon", "Electric Claw", "God Human", "Sanguine Art"},
+    Sword = {"Dark Blade", "Shisui", "Wando", "Oden’s Sword", "True Triple Katana"},
+    Gun   = {"Kabucha", "Serpent Bow", "Bazooka", "Slingshot"},
+}
 
--- Tạo tiêu đề cho menu
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "Blox Fruits Menu"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 18
-title.TextStrokeTransparency = 0.8
-title.TextAlign = Enum.TextAlign.Center
-title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-title.BackgroundTransparency = 0.7
-title.Parent = frame
+-- Chọn loại vũ khí
+AutoFarmTab:CreateDropdown({
+   Name = "Chọn Loại Vũ Khí",
+   Options = {"Melee", "Sword", "Gun"},
+   CurrentOption = "Melee",
+   Callback = function(option)
+       _G.SelectedWeaponGroup = option
+   end,
+})
 
--- Tạo các nút với chức năng bật/tắt
-local function createButton(text, position, toggleFunction)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0, 250, 0, 50)
-    button.Position = position
-    button.Text = text
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    button.TextSize = 16
-    button.Parent = frame
-    button.MouseButton1Click:Connect(toggleFunction)
-    -- Tạo hiệu ứng hover
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    end)
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    end)
-    return button
-end
+-- Toggle Auto Farm
+AutoFarmTab:CreateToggle({
+   Name = "Auto Farm Mobs",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.AutoFarm = Value
 
--- Biến để kiểm tra trạng thái các chức năng
-local flying = false
-local speed = 100
-local flyButton, speedButton, resetButton
+       -- Hàm tìm quái gần nhất
+       local function GetNearestEnemy()
+           local closest = nil
+           local shortest = math.huge
+           for _, v in pairs(workspace.Enemies:GetChildren()) do
+               if v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
+                   local dist = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
+                   if dist < shortest then
+                       shortest = dist
+                       closest = v
+                   end
+               end
+           end
+           return closest
+       end
 
--- Chức năng bay
-local function toggleFly()
-    flying = not flying
-    if flying then
-        flyButton.Text = "Tắt Bay"
-        local bodyVelocity = Instance.new("BodyVelocity")
-        bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
-        bodyVelocity.Velocity = Vector3.new(0, 50, 0) -- Tạo lực bay lên
-        bodyVelocity.Parent = player.Character:WaitForChild("HumanoidRootPart")
-    else
-        flyButton.Text = "Bật Bay"
-        if player.Character:FindFirstChild("HumanoidRootPart"):FindFirstChild("BodyVelocity") then
-            player.Character.HumanoidRootPart.BodyVelocity:Destroy()
-        end
-    end
-end
+       -- Hàm tự chọn vũ khí từ nhóm
+       local function GetWeaponFromGroup()
+           local backpack = game.Players.LocalPlayer.Backpack
+           local group = _G.SelectedWeaponGroup or "Melee"
+           local list = WeaponGroups[group] or {}
 
--- Chức năng tốc độ
-local function toggleSpeed()
-    if speed == 100 then
-        speed = 200
-        player.Character.Humanoid.WalkSpeed = speed
-        speedButton.Text = "Tắt Tốc Độ Cao"
-    else
-        speed = 100
-        player.Character.Humanoid.WalkSpeed = speed
-        speedButton.Text = "Bật Tốc Độ Cao"
-    end
-end
+           for _, weaponName in pairs(list) do
+               if backpack:FindFirstChild(weaponName) then
+                   return weaponName
+               end
+           end
+           return nil
+       end
 
--- Chức năng reset
-local function resetCharacter()
-    player.Character:BreakJoints() -- Reset nhân vật
-end
+       -- Hàm trang bị và trả tool
+       local function EquipWeaponAuto()
+           local weaponName = GetWeaponFromGroup()
+           if not weaponName then return nil end
 
--- Tạo các nút
-flyButton = createButton("Bật Bay", UDim2.new(0, 25, 0, 50), toggleFly)
-speedButton = createButton("Bật Tốc Độ Cao", UDim2.new(0, 25, 0, 110), toggleSpeed)
-resetButton = createButton("Reset Nhân Vật", UDim2.new(0, 25, 0, 170), resetCharacter)
+           local player = game.Players.LocalPlayer
+           local char = player.Character
+           local backpack = player.Backpack
+
+           if backpack:FindFirstChild(weaponName) then
+               local tool = backpack[weaponName]
+               char.Humanoid:EquipTool(tool)
+               return tool
+           elseif char:FindFirstChild(weaponName) then
+               return char[weaponName]
+           end
+           return nil
+       end
+
+       -- Vòng lặp farm
+       task.spawn(function()
+           while _G.AutoFarm do
+               task.wait(0.2)
+
+               local enemy = GetNearestEnemy()
+               if enemy then
+                   local char = game.Players.LocalPlayer.Character
+                   if char and char:FindFirstChild("HumanoidRootPart") then
+                       -- Dịch chuyển lên đầu quái
+                       char.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+
+                       -- Trang bị và đánh
+                       local tool = EquipWeaponAuto()
+                       if tool then
+                           tool:Activate()
+                       end
+                   end
+               end
+           end
+       end)
+   end,
+})
+local StatsTab = Window:CreateTab("Auto Stats", 4483362458)
+
+local StatsList = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"}
+_G.AutoStatEnabled = false
+_G.AutoStatType = "Melee"
+_G.AutoStatAmount = 1
+
+-- Chọn loại chỉ số
+StatsTab:CreateDropdown({
+   Name = "Chọn chỉ số muốn tăng",
+   Options = StatsList,
+   CurrentOption = "Melee",
+   Callback = function(option)
+       _G.AutoStatType = option
+   end,
+})
+
+-- Chọn số điểm tăng mỗi lần
+StatsTab:CreateInput({
+   Name = "Số điểm tăng mỗi lần (mặc định 1)",
+   PlaceholderText = "Nhập số (ví dụ: 3)",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(input)
+       local num = tonumber(input)
+       if num then _G.AutoStatAmount = num end
+   end,
+})
+
+-- Toggle bật/tắt
+StatsTab:CreateToggle({
+   Name = "Bật Auto Stats",
+   CurrentValue = false,
+   Callback = function(state)
+       _G.AutoStatEnabled = state
+
+       task.spawn(function()
+           while _G.AutoStatEnabled do
+               pcall(function()
+                   game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", _G.AutoStatType, _G.AutoStatAmount)
+               end)
+               task.wait(1)
+           end
+       end)
+   end,
+})
