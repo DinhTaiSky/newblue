@@ -1,3 +1,4 @@
+-- Tạo menu với hình ảnh và avatar đẹp
 local Window = Rayfield:CreateWindow({
    Name = "Blox Fruits Script Menu",
    LoadingTitle = "Blox Fruits Hub",
@@ -6,7 +7,8 @@ local Window = Rayfield:CreateWindow({
       Enabled = true,
       FolderName = "BloxFruitsUI",
       FileName = "Config"
-   }
+   },
+   Image = "https://images.search.yahoo.com/search/images;_ylt=AwrgwHwLaBNoQI4DBgRXNyoA;_ylu=Y29sbwNncTEEcG9zAzEEdnRpZAMEc2VjA3Nj?type=E210US91215G0&p=avatar+ff&fr=mcafee&th=474&tw=474&imgurl=https%3A%2F%2Fantimatter.vn%2Fwp-content%2Fuploads%2F2023%2F02%2Fhinh-anh-avatar-ff.jpg&rurl=https%3A%2F%2Fantimatter.vn%2Fhinh-anh-avatar-ff%2F&size=259KB&name=5000%2B+H%C3%ACnh+%E1%BA%A2nh+Avatar+FF+%C4%90%E1%BA%B9p%2C+Ch%E1%BA%A5t%2C+Ng%E1%BA%A7u+Qu%C3%AAn+C%E1%BA%A3+S%E1%BA%A7u&oid=3&h=987&w=987&turl=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.54H5rMVKQbOhtjLaUzvLKgHaHa%26pid%3DApi&tt=5000%2B+H%C3%ACnh+%E1%BA%A2nh+Avatar+FF+%C4%90%E1%BA%B9p%2C+Ch%E1%BA%A5t%2C+Ng%E1%BA%A7u+Qu%C3%AAn+C%E1%BA%A3+S%E1%BA%A7u&sigr=yqHqEw0_bHvo&sigit=B_RvpTCdqrHV&sigi=1sFiqihVUTUz&sign=jObE5JtIIuHI&sigt=jObE5JtIIuHI",  -- Thay URL hình ảnh của bạn vào đây
 })
 
 -- Tab Auto Farm
@@ -108,6 +110,8 @@ AutoFarmTab:CreateToggle({
        end)
    end,
 })
+
+-- Tab Auto Stats
 local StatsTab = Window:CreateTab("Auto Stats", 4483362458)
 
 local StatsList = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"}
@@ -153,6 +157,8 @@ StatsTab:CreateToggle({
        end)
    end,
 })
+
+-- Tab Auto Raid
 local AutoRaidTab = Window:CreateTab("Auto Raid", 4483362458)
 
 -- Danh sách đảo
