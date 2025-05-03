@@ -1,56 +1,28 @@
-local OrionLib = 
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/DinhTaiSky/newblue/refs/heads/main/script.lua"))()
 
 -- Tạo cửa sổ menu
 local Window = OrionLib:MakeWindow({
-    Name = "Blox Fruits Menu",
+    Name = "Tai",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "BloxFruitsCFG"
+    ConfigFolder = "TaiMenuConfig",
+    BackgroundColor = Color3.fromRGB(0, 0, 0),
+    TextColor = Color3.fromRGB(255, 0, 0),
+    Size = UDim2.new(0, 400, 0, 400)
 })
 
--- Tạo tab Auto Farm
-local AutoFarmTab = Window:MakeTab({
-    Name = "Auto Farm",
-    Icon = "rbxassetid://6031075938", -- icon thanh kiếm
-    PremiumOnly = false
+-- Tạo tab đầu tiên trong menu
+local FirstTab = Window:MakeTab({
+    Name = "Cay Level",
+    Icon = "rbxassetid://6031075938",  -- Icon có thể là hình ảnh của thanh kiếm hoặc bất kỳ thứ gì bạn muốn
+    PremiumOnly = true
 })
 
--- Auto Farm toggle
-AutoFarmTab:AddToggle({
-    Name = "Auto Farm",
+-- Thêm toggle vào tab này
+FirstTab:AddToggle({
+    Name = "Sample Toggle",
     Default = false,
     Callback = function(Value)
-        getgenv().AutoFarm = Value
-        while getgenv().AutoFarm do
-            -- Đây là vị trí bạn thêm mã farm thật
-            print("Auto Farming...")
-            wait(1)
-        end
-    end
-})
-
--- Auto Quest toggle
-AutoFarmTab:AddToggle({
-    Name = "Auto Quest",
-    Default = false,
-    Callback = function(Value)
-        getgenv().AutoQuest = Value
-        while getgenv().AutoQuest do
-            print("Auto Questing...")
-            wait(1)
-        end
-    end
-})
-
--- Auto Stats toggle
-AutoFarmTab:AddToggle({
-    Name = "Auto Stats",
-    Default = false,
-    Callback = function(Value)
-        getgenv().AutoStats = Value
-        while getgenv().AutoStats do
-            print("Auto Adding Stats...")
-            wait(1)
-        end
+        print("Toggle Value: ", Value)
     end
 })
